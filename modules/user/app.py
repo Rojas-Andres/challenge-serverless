@@ -56,8 +56,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def user_generic_create(request: Request, user: UserBase, db: Session = Depends(get_db)):
     try:
         user_create = models.User(**user.dict())
+        user_exists = db.query(models.User).filter(models.User.email == user.email).first()
+        if user_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User already exists"}
+            )
         user_db = generic_post(user_create, db)
         return user_db
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
 
