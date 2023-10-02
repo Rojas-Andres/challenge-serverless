@@ -1,0 +1,7 @@
+FROM public.ecr.aws/m7j0n8s6/testing
+COPY . /app
+WORKDIR /app
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod 777 start.sh
+EXPOSE 8001
+CMD ["sh", "start.sh"]

@@ -1,1 +1,9 @@
 -r layer_dependencies_basic/requirements.txt
+pylama==8.4.1
+isort==5.11.4
+black==23.1.0
+python-dotenv==0.21.0
+coverage==7.2.5
+pre-commit
+configparser
+boto3
