@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        // Local
+        {
+            "name": "Python Local",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal"
+        },
+        // Local
+        {
+            "name": "Cron Local",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/cron.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Pytest local",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            // "program": "${workspaceFolder}/cron.py",
+            "args": [
+                "-vv",
+                "-s"
+            ],
+            "console": "integratedTerminal"
+        },
+    ]
+}
