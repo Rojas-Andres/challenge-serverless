@@ -2,11 +2,14 @@
 virtualenv venv
 pip install -r local.txt
 python main.py
+# RUN migrations alembic
 
+alembic revision --autogenerate -m "generate new models"
+alembic upgrade heads
 # RUN Docker-compose local
 
 docker-compose -f docker-compose.testing.yml build
-
+docker-compose -f docker-compose.testing.yml up --force-recreate --build
 
 ## preconfigure.Dockerfile
 
