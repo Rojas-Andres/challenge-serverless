@@ -92,7 +92,8 @@ def get_db():
     :return: Una sesión de base de datos.
     :rtype: Session
     """
+    db = sesion_local()
     try:
-        yield sesion_local.Session()
+        yield db
     finally:
-        close_all_sessions()
+        db.close()
