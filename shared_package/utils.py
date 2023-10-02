@@ -12,8 +12,6 @@ def generic_post(data, db: Session):
     db = db.using_bind("writer")
     db.add(data)
     db.commit()
-    db.refresh(data)
-    db.close()
     return data
 
 
