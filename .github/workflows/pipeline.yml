@@ -19,7 +19,7 @@ env:
   DEVELOP_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::926297945794:role/aws-sam-cli-managed-chall-CloudFormationExecutionR-18EJ95EIUGRYA
   DEVELOP_ARTIFACTS_BUCKET: aws-sam-cli-managed-challenge-ser-artifactsbucket-1m6eups628kms
   DEVELOP_STACK_NAME: challenge-serverless-dev
-  DEVELOP_REGION: us-east-2
+  DEVELOP_REGION: us-west-2
 
   # DEVELOP
   ENV_AWS_ACCESS_KEY: ${{ secrets.ENV_AWS_ACCESS_KEY }}
