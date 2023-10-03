@@ -123,8 +123,6 @@ Resources:
         LayerDependencies: !GetAtt LayerStack.Outputs.LayerDependencies
         # Dynamo
         DynamoTableName: !GetAtt DynamoStack.Outputs.DynamoTableName
-        # Lambda Security Group
-        LambdasSecurityGroup: !GetAtt SecurityGroupStack.Outputs.LambdasSecurityGroup
       TimeoutInMinutes: 10
 
   ApiGatewayStack:
@@ -156,6 +154,5 @@ Resources:
         # Dynamo
         DynamoTableName: !GetAtt DynamoStack.Outputs.DynamoTableName
         # Security group
-        LambdasSecurityGroup: !GetAtt SecurityGroupStack.Outputs.LambdasSecurityGroup
         AuthorizerArn: !GetAtt AuthorizerStack.Outputs.AuthorizerArn
       TimeoutInMinutes: 10
