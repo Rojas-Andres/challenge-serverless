@@ -5,19 +5,16 @@ from typing import List, Optional
 from pydantic import BaseModel, EmailStr, constr
 
 
-class UserBase(BaseModel):
-    full_name: str
+class Credentials(BaseModel):
     email: EmailStr
-    is_active: bool = True
     password: constr(min_length=8, max_length=255)
 
 
-class UserReturn(UserBase):
+class AuthReturn(BaseModel):
+    access_token: str
+    full_name: str
+    is_super_admin: bool
+    is_admin: bool
+    expires_at: str
+    uuid: str
     id: int
-
-    class Config:
-        orm_mode = True
-
-
-class UserBaseAdmin(UserBase):
-    is_admin: bool = False

@@ -10,13 +10,14 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from lib_user.schema import UserBase, UserReturn
+from lib_user.repository import create_user
+from lib_user.schema import UserBase, UserBaseAdmin, UserReturn
 from mangum import Mangum
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
-from shared_package.db import models
 from shared_package.db.session import get_db
+from shared_package.repository import user as user_repository
 from shared_package.utils import generic_post, get_data_authorizer
 
 app = FastAPI(
@@ -55,15 +56,17 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @router.post("/", status_code=response_status.HTTP_201_CREATED, response_model=UserReturn)
 async def user_generic_create(request: Request, user: UserBase, db: Session = Depends(get_db)):
+    """
+    Create a new user in app
+    """
     try:
-        user_exists = db.query(models.User).filter(models.User.email == user.email).first()
+        user_exists = user_repository.get_user_by_email(db, user.email)
         if user_exists:
             raise HTTPException(
                 status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User already exists"}
             )
         user.password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        user_create = models.User(**user.dict(exclude_unset=True))
-        user_db = generic_post(user_create, db)
+        user_db = create_user(user.dict(exclude_unset=True), db)
         return user_db
     except HTTPException as e:
         raise e
@@ -71,14 +74,27 @@ async def user_generic_create(request: Request, user: UserBase, db: Session = De
         raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
 
 
-@router.post("/{user_id}/admin", status_code=response_status.HTTP_201_CREATED)
+@router.post("/{user_id}/admin", status_code=response_status.HTTP_201_CREATED, response_model=UserReturn)
 async def admin_create(
-    request: Request, user_id, user: UserBase, db: Session = Depends(get_db), data_token=Depends(get_data_authorizer)
+    request: Request,
+    user_id,
+    user: UserBaseAdmin,
+    db: Session = Depends(get_db),
+    data_token=Depends(get_data_authorizer),
 ):
+    """
+    Create a new admin user
+    """
     try:
-        if not data_token.get("is_admin"):
-            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
-        return {"hola": "sabroso men"}
+        if not data_token.get("is_super_admin"):
+            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "No autorizado"})
+        user_exists = user_repository.get_user_by_email(db, user.email)
+        if user_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User already exists"}
+            )
+        user_db = create_user(user.dict(exclude_unset=True), db)
+        return user_db
     except HTTPException as e:
         raise e
     except Exception as e:
