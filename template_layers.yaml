@@ -28,7 +28,3 @@ Outputs:
     Value: !Ref LayerDependencies
     Export:
       Name: !Sub layer-dependencies-${StackNameChallenge}-${Environment}
-  LayerCron:
-    Value: !Ref LayerCron
-    Export:
-      Name: !Sub layer-cron-${StackNameChallenge}-${Environment}
