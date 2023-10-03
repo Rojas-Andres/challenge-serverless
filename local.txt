@@ -8,3 +8,7 @@ pre-commit
 configparser
 boto3
 sendgrid==6.9.7
+moto
+pytest
+httpx
+faker

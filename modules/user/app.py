@@ -3,7 +3,6 @@ Módulo que contiene la aplicación FastAPI que maneja las rutas de autenticaci�
 """
 import os
 
-import bcrypt
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi import status as response_status
 from fastapi.encoders import jsonable_encoder
@@ -18,10 +17,8 @@ from shared_package.db.session import get_db
 from shared_package.repository import user as user_repository
 from shared_package.repository.user import create_user
 from shared_package.rol_checker import RoleChecker
-
-# from lib_user.schema import UserBase, UserBaseAdmin, UserReturn, UserUpdate
-from shared_package.schemas.user import UserBase, UserBaseAdmin, UserReturn, UserUpdate
-from shared_package.utils import generic_post, get_data_authorizer, update_generic_by_model
+from shared_package.schemas.user import UserBaseAdmin, UserReturn, UserUpdate
+from shared_package.utils import get_data_authorizer
 
 app = FastAPI(
     debug=os.getenv("DEBUG", False),
