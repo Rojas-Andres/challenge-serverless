@@ -13,13 +13,16 @@ class ProductBase(BaseModel):
     name: constr(min_length=3, max_length=255)
     sku: constr(min_length=4, max_length=255)
     price: float
-    created_by: str
-    updated_by: str
-    id_brand: int
+    brand_id: str
 
 
 class ProductReturn(ProductBase):
     id: int
+    create_by: str
+    update_by: str
+
+    class Config:
+        orm_mode = True
 
 
 class BrandReturn(BrandBase):

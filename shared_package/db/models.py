@@ -45,4 +45,6 @@ class Products(Base):
     sku = Column(String(200), index=True, unique=True)
     name = Column(String(200))
     price = Column(Float, nullable=False)
-    brand = Column(Integer, ForeignKey("brands.id", ondelete="CASCADE"))
+    brand_id = Column(Integer, ForeignKey("brands.id", ondelete="CASCADE"))
+    create_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    update_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

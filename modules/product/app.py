@@ -1,5 +1,5 @@
 """
-Módulo que contiene la aplicación FastAPI que maneja las rutas de autenticación.
+Módulo que contiene la aplicación FastAPI que maneja las rutas de producto.
 """
 import os
 
@@ -10,12 +10,13 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from lib_product.repository import create_brand, get_brand_by_name
+from lib_product.repository import create_brand, get_brand_by_id, get_brand_by_name, get_sku_exists
 from lib_product.schema import BrandBase, BrandReturn, ProductBase, ProductReturn
 from mangum import Mangum
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
+from shared_package.db import models
 from shared_package.db.session import get_db
 from shared_package.rol_checker import RoleChecker
 from shared_package.utils import generic_post, get_data_authorizer, update_generic_by_model
@@ -65,10 +66,24 @@ async def product_create(
     auth=Depends(allow_only_admins),
 ):
     """
-    Create a new user in app
+    Create a new product in app
     """
     try:
-        return {"hola": "asdasdas"}
+        brand_exists = get_brand_by_id(product.brand_id, db)
+        if not brand_exists:
+            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Brand not exists"})
+        sku_exists = get_sku_exists(product.brand_id, db)
+        if not sku_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Sku already exists"}
+            )
+        product = product.dict(exclude_unset=True)
+        product["create_by"] = data_token["user_id"]
+        product["update_by"] = data_token["user_id"]
+        product = models.Products(**product)
+        product_db = generic_post(product, db)
+        db.commit()
+        return product_db
     except HTTPException as e:
         raise e
     except Exception as e:
