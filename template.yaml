@@ -151,13 +151,6 @@ Resources:
         Authorizers:
           LambdaAuthorizer:
             FunctionArn: !Ref AuthorizerArn
-      CacheClusterEnabled: true
-      CacheClusterSize: !Ref GbCacheApiGateway
-      MethodSettings:
-        - ResourcePath: /
-          HttpMethod: GET
-          CachingEnabled: true
-          CacheTtlInSeconds: 30
 
   AuthFunction:
     Type: AWS::Serverless::Function
