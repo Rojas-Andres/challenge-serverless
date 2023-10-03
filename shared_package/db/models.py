@@ -48,3 +48,4 @@ class Products(Base):
     brand_id = Column(Integer, ForeignKey("brands.id", ondelete="CASCADE"))
     create_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     update_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    delete_at = Column(DateTime, nullable=True, default=None)

@@ -236,13 +236,13 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /product/
+            Path: /product
             Method: POST
         createBrand:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /product/brend
+            Path: /product/brand
             Method: POST
   NotificationFunction:
     Type: AWS::Serverless::Function

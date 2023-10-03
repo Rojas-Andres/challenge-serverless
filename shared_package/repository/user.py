@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from shared_package.db import models
@@ -55,3 +56,10 @@ def create_user(user, db: Session):
     user_create = models.User(**user)
     user_db = generic_post(user_create, db)
     return user_db
+
+
+def get_users_admins(db: Session):
+    users_admin = (
+        db.query(models.User).filter(or_(models.User.rol_type == "admin", models.User.rol_type == "super_admin")).all()
+    )
+    return users_admin

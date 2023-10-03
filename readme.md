@@ -7,6 +7,10 @@
     - Usuario (Usuario de la plataforma)
         - El usuario por ahora solo podra ver los productos
     - Usuario anonimo ( usuario que no esta registrado en la plataforma)
+2. Se agregan dos columnas a la tabla de productos , la cual es create_by y update_by que hace referencia a cual fue el usuario que creo el producto y el update_by hace referencia al usuario que actualizo el producto
+3. Por defecto no se eliminara el producto porque si un producto es eliminado tambien se elimina el historial de las visitas de los usuarios anonimos y por lo tanto no se tendria una verdadera traza. Lo que hice fue añadir una columna llamada delete_at y actualizar el sku a sku_delete_hora.
+4. El sku es unico para cada producto.
+5. Cuando se actualiza un precio al producto, se obtienen los usuarios admin de la aplicacion y se llama al sqs que se encargara de enviar la notificacion de que el producto fue editado.
 
 ## Run project local without Docker
 virtualenv venv

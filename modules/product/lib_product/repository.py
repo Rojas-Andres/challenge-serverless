@@ -37,6 +37,18 @@ def get_brand_by_id(id, db: Session):
     return brand_exists
 
 
+def get_product_exists(id, db: Session):
+    """
+    Get product by id
+    """
+    product_exists = (
+        db.query(models.Products.id, models.Products.name, models.Products.price, models.Products.sku)
+        .filter(models.Products.id == id, models.Products.delete_at.is_(None))
+        .first()
+    )
+    return product_exists
+
+
 def get_sku_exists(sku_id, db: Session):
     """
     Get sku exists
@@ -50,6 +62,12 @@ def get_sku_exists(sku_id, db: Session):
         .first()
     )
     return sku_exists
+
+
+def update_product(id: int, db: Session, data: dict):
+    db.query(models.Products).filter(models.Products.id == id).update(data)
+    db.commit()
+    return id
 
 
 def create_brand(user, db: Session):
@@ -68,3 +86,7 @@ def create_product(user, db: Session):
     product = models.Products(**user)
     breand_db = generic_post(product, db)
     return breand_db
+
+
+def delete_product(product, db: Session):
+    pass

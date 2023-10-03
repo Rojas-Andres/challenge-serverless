@@ -3,6 +3,7 @@ import time
 import uuid
 from datetime import timedelta
 
+import boto3
 import jwt
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -75,3 +76,37 @@ def update_generic_by_model(generic_model, id, data, db: Session):
     db.query(generic_model).filter(generic_model.id == id).update(data)
     db.commit()
     return id
+
+
+def sqs_email(message_body):
+    print("[ Challenge - Lambda ] - START SQS EMAIL")
+    try:
+        if "local" == os.environ.get("ENVIRONMENT").lower() or "dev" == os.environ.get("ENVIRONMENT").lower():
+            from modules.notifications.app import handler
+
+            event = {
+                "Records": [
+                    {
+                        "messageId": "60b76e38-1eab-4bc5-9e4c-719696ba136c",
+                        "body": message_body,
+                    }
+                ]
+            }
+            handler(event)
+        else:
+            sqs = boto3.client(
+                "sqs",
+                region_name=os.environ.get("ENV_AWS_REGION"),
+                aws_access_key_id=os.environ.get("ENV_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.environ.get("ENV_AWS_SECRET_ACCESS_KEY"),
+            )
+
+            queue_url = os.environ.get("SQS_STACK_QUEUE_URL")
+
+            response = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
+
+            print("[ Challenge - Lambda ] - END SQS EMAIL")
+            return response
+    except Exception as e:
+        print("[ Challenge - Lambda ] - Error: {}".format(e))
+        raise Exception("Exception: AWS SQS Provider {}".format(str(e)))

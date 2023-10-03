@@ -1,16 +1,23 @@
 """
 Módulo que contiene la aplicación FastAPI que maneja las rutas de producto.
 """
+import datetime
 import os
 
-import bcrypt
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi import status as response_status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from lib_product.repository import create_brand, get_brand_by_id, get_brand_by_name, get_sku_exists
+from lib_product.repository import (
+    create_brand,
+    get_brand_by_id,
+    get_brand_by_name,
+    get_product_exists,
+    get_sku_exists,
+    update_product,
+)
 from lib_product.schema import BrandBase, BrandReturn, ProductBase, ProductReturn
 from mangum import Mangum
 from sqlalchemy.orm import Session
@@ -18,8 +25,9 @@ from starlette.requests import Request
 
 from shared_package.db import models
 from shared_package.db.session import get_db
+from shared_package.repository import user as user_repository
 from shared_package.rol_checker import RoleChecker
-from shared_package.utils import generic_post, get_data_authorizer, update_generic_by_model
+from shared_package.utils import generic_post, get_data_authorizer, sqs_email, update_generic_by_model
 
 app = FastAPI(
     debug=os.getenv("DEBUG", False),
@@ -57,7 +65,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@router.post("/", status_code=response_status.HTTP_201_CREATED, response_model=ProductReturn)
+@router.post("", status_code=response_status.HTTP_201_CREATED, response_model=ProductReturn)
 async def product_create(
     request: Request,
     product: ProductBase,
@@ -72,8 +80,8 @@ async def product_create(
         brand_exists = get_brand_by_id(product.brand_id, db)
         if not brand_exists:
             raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Brand not exists"})
-        sku_exists = get_sku_exists(product.brand_id, db)
-        if not sku_exists:
+        sku_exists = get_sku_exists(product.sku, db)
+        if sku_exists:
             raise HTTPException(
                 status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Sku already exists"}
             )
@@ -84,6 +92,92 @@ async def product_create(
         product_db = generic_post(product, db)
         db.commit()
         return product_db
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
+
+
+@router.patch("/{id}", status_code=response_status.HTTP_201_CREATED)
+async def product_update(
+    request: Request,
+    id: int,
+    product: ProductBase,
+    db: Session = Depends(get_db),
+    data_token=Depends(get_data_authorizer),
+    auth=Depends(allow_only_admins),
+):
+    """
+    update a product in app
+    """
+    try:
+        product_exists = get_product_exists(id, db)
+        if not product_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Product not exists"}
+            )
+        brand_exists = get_brand_by_id(product.brand_id, db)
+        if not brand_exists:
+            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Brand not exists"})
+        sku_exists = get_sku_exists(product.sku, db)
+        if sku_exists and sku_exists.id != id:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Sku already exists"}
+            )
+        product = product.dict(exclude_unset=True)
+        product["update_by"] = data_token["user_id"]
+        update_product(
+            id,
+            db,
+            product,
+        )
+        db.commit()
+        if product.price != product_exists.price:
+            users_admin = user_repository.get_users_admins(db, "admin")
+            for user in users_admin:
+                sqs_email(
+                    user.email,
+                    "Price changed",
+                    f"Hi {user.full_name}, the price of the product {product_exists.name} has changed from {product_exists.price} to {product.price}",
+                )
+        return {
+            "id": id,
+            "message": "Product updated successfully",
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
+
+
+@router.delete("/{id}", status_code=response_status.HTTP_201_CREATED)
+async def product_delete(
+    request: Request,
+    id: int,
+    db: Session = Depends(get_db),
+    data_token=Depends(get_data_authorizer),
+    auth=Depends(allow_only_admins),
+):
+    """
+    update a product in app
+    """
+    try:
+        product_exists = get_product_exists(id, db)
+        if not product_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "Product not exists"}
+            )
+        now = datetime.datetime.now()
+        data_update = {
+            "update_by": data_token["user_id"],
+            "delete_at": now,
+            "sku": f"{product_exists.sku}_deleted_{now}",
+        }
+        update_generic_by_model(models.Products, id, data_update, db)
+        return {
+            "id": id,
+            "message": "Product delete successfully",
+        }
     except HTTPException as e:
         raise e
     except Exception as e:
