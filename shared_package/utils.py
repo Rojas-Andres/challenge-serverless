@@ -101,7 +101,7 @@ def sqs_email(message_body):
                 aws_secret_access_key=os.environ.get("ENV_AWS_SECRET_ACCESS_KEY"),
             )
 
-            queue_url = os.environ.get("SQS_STACK_QUEUE_URL")
+            queue_url = os.environ.get("SQS_NOTIFICATION_EMAIL")
 
             response = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
 

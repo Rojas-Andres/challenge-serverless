@@ -244,6 +244,18 @@ Resources:
             RestApiId: !Ref Api
             Path: /product/brand
             Method: POST
+        deleteProduct:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/{id}
+            Method: DELETE
+        updateProduct:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/{id}
+            Method: PATCH
   NotificationFunction:
     Type: AWS::Serverless::Function
     Properties:

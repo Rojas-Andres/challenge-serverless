@@ -7,3 +7,4 @@ coverage==7.2.5
 pre-commit
 configparser
 boto3
+sendgrid==6.9.7

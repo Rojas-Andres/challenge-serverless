@@ -2,6 +2,7 @@
 Módulo que contiene la aplicación FastAPI que maneja las rutas de producto.
 """
 import datetime
+import json
 import os
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
@@ -132,14 +133,16 @@ async def product_update(
             product,
         )
         db.commit()
-        if product.price != product_exists.price:
-            users_admin = user_repository.get_users_admins(db, "admin")
+        if float(product["price"]) != float(product_exists.price):
+            users_admin = user_repository.get_users_admins(db)
             for user in users_admin:
-                sqs_email(
-                    user.email,
-                    "Price changed",
-                    f"Hi {user.full_name}, the price of the product {product_exists.name} has changed from {product_exists.price} to {product.price}",
-                )
+                data = {
+                    "message": f"Hi {user.full_name}, the price of the product {product_exists.name} has changed from {product_exists.price} to {product['price']}",
+                    "full_name": user.full_name,
+                    "type": "send_email_change_price",
+                    "email": user.email,
+                }
+                sqs_email(json.dumps(data))
         return {
             "id": id,
             "message": "Product updated successfully",
