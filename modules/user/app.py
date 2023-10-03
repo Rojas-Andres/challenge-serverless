@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from lib_user.repository import create_user
-from lib_user.schema import UserBase, UserBaseAdmin, UserReturn
+from lib_user.schema import UserBase, UserBaseAdmin, UserReturn, UserUpdate
 from mangum import Mangum
 from sqlalchemy.orm import Session
 from starlette.requests import Request
@@ -19,7 +19,7 @@ from starlette.requests import Request
 from shared_package.db.session import get_db
 from shared_package.repository import user as user_repository
 from shared_package.rol_checker import RoleChecker
-from shared_package.utils import generic_post, get_data_authorizer
+from shared_package.utils import generic_post, get_data_authorizer, update_generic_by_model
 
 app = FastAPI(
     debug=os.getenv("DEBUG", False),
@@ -110,7 +110,7 @@ async def admin_delete(
     user_id: str,
     db: Session = Depends(get_db),
     data_token=Depends(get_data_authorizer),
-    auth=Depends(allow_only_admins),
+    auth=Depends(allow_ony_super_admin),
 ):
     """
     Create a new admin user
@@ -125,6 +125,34 @@ async def admin_delete(
             raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User not found"})
         user_repository.delete_user(user, db)
         return {"message": "User deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
+
+
+@router.patch("/{user_id}/admin", status_code=response_status.HTTP_200_OK)
+async def admin_update(
+    request: Request,
+    user_id: str,
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    data_token=Depends(get_data_authorizer),
+    auth=Depends(allow_ony_super_admin),
+):
+    """
+    Update a admin user
+    """
+    try:
+        user = user_repository.get_user_by_id(user_id, db)
+        if not user:
+            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User not found"})
+        user_update = user_repository.update_user(
+            user_id,
+            db,
+            user_update.dict(exclude_unset=True),
+        )
+        return {"user_id": user_update, "message": "User update successfully"}
     except HTTPException as e:
         raise e
     except Exception as e:

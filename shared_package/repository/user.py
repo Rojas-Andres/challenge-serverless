@@ -42,3 +42,9 @@ def delete_user(user: models.User, db: Session):
     db.delete(user)
     db.commit()
     return user
+
+
+def update_user(user_id: int, db: Session, data: dict):
+    db.query(models.User).filter(models.User.id == user_id).update(data)
+    db.commit()
+    return user_id

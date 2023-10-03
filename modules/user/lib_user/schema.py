@@ -23,3 +23,11 @@ class UserReturn(UserBase):
 
 class UserBaseAdmin(UserBase):
     rol_type: Rol = Rol.user
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str]
+    email: Optional[EmailStr]
+    is_active: Optional[bool]
+    password: Optional[str]
+    

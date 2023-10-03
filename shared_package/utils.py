@@ -69,3 +69,9 @@ def get_user_data(user):
 
 def generate_unique_id():
     return str(uuid.uuid4())
+
+
+def update_generic_by_model(generic_model, id, data, db: Session):
+    db.query(generic_model).filter(generic_model.id == id).update(data)
+    db.commit()
+    return id

@@ -1,8 +1,11 @@
 ## Anotaciones
 1. Roles
     - Super admin (encargado de crear, eliminar , actualizar usuarios admin)
+        - Lo pense principalmente para que los administradores no se puedan eliminar entre si y que solo lo haga un super admin.
     - Admin (encargado de crear o actualizar productos)
+        - El admin solo puede eliminar o actualizar productos, no va a tener permisos ni de editarse a si mismo , ni de eliminarse y mucho menos de eliminar otros usuarios
     - Usuario (Usuario de la plataforma)
+        - El usuario por ahora solo podra ver los productos
     - Usuario anonimo ( usuario que no esta registrado en la plataforma)
 
 ## Run project local without Docker
