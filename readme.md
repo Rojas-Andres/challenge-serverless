@@ -33,3 +33,5 @@ aws ecr-public get-login-password --region us-east-1 --profile wts | docker logi
 `docker tag fastapi_image:latest public.ecr.aws/m7j0n8s6/testing`
 `docker push public.ecr.aws/m7j0n8s6/testing`
 
+## Documentacion para generar los roles y credenciales para configurar el cicd
+https://aws.amazon.com/es/blogs/compute/introducing-aws-sam-pipelines-automatically-generate-deployment-pipelines-for-serverless-applications/

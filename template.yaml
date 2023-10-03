@@ -93,9 +93,6 @@ Parameters:
   DynamoTableName:
     Description: Dynamo Table name
     Type: String
-  LambdasSecurityGroup:
-    Description: Security Group
-    Type: String
   AuthorizerArn:
     Description: Authorizer Arn
     Type: String
