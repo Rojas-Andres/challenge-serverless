@@ -1,9 +1,7 @@
-from datetime import datetime
-
-from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String
 
 from shared_package.db.base_class import Base
+from shared_package.db.enums import Rol
 
 
 class User(Base):
@@ -18,8 +16,7 @@ class User(Base):
     email = Column(String(200), index=True, unique=True)
     full_name = Column(String(200))
     is_active = Column(Boolean, default=False)
-    is_admin = Column(Boolean, default=False)
-    is_super_admin = Column(Boolean, default=False)
+    rol_type = Column(Enum(Rol), default=Rol.user)
     password = Column(String(255))
     deleted_at = Column(DateTime, nullable=True, default=None)
 

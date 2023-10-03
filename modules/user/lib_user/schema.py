@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, constr
 
+from shared_package.db.enums import Rol
+
 
 class UserBase(BaseModel):
     full_name: str
@@ -20,4 +22,4 @@ class UserReturn(UserBase):
 
 
 class UserBaseAdmin(UserBase):
-    is_admin: bool = False
+    rol_type: Rol = Rol.user

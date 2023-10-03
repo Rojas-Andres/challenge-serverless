@@ -1,8 +1,8 @@
-"""generate new models
+"""add models
 
-Revision ID: 2bc16ad1e04a
+Revision ID: d45def7d6bee
 Revises: 
-Create Date: 2023-10-02 15:53:04.427523
+Create Date: 2023-10-02 19:58:36.063360
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2bc16ad1e04a'
+revision = 'd45def7d6bee'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -32,7 +32,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=200), nullable=True),
     sa.Column('full_name', sa.String(length=200), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.Column('is_admin', sa.Boolean(), nullable=True),
+    sa.Column('rol_type', sa.Enum('super_admin', 'admin', 'user', name='rol'), nullable=True),
     sa.Column('password', sa.String(length=255), nullable=True),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),

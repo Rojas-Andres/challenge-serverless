@@ -18,12 +18,15 @@ from starlette.requests import Request
 
 from shared_package.db.session import get_db
 from shared_package.repository import user as user_repository
+from shared_package.rol_checker import RoleChecker
 from shared_package.utils import generic_post, get_data_authorizer
 
 app = FastAPI(
     debug=os.getenv("DEBUG", False),
     title="User Service",
 )
+allow_ony_super_admin = RoleChecker(["super_admin"])
+allow_only_admins = RoleChecker(["super_admin", "admin"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +35,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 router = APIRouter(prefix="/user")
 
@@ -81,13 +85,12 @@ async def admin_create(
     user: UserBaseAdmin,
     db: Session = Depends(get_db),
     data_token=Depends(get_data_authorizer),
+    auth=Depends(allow_ony_super_admin),
 ):
     """
     Create a new admin user
     """
     try:
-        if not data_token.get("is_super_admin"):
-            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "No autorizado"})
         user_exists = user_repository.get_user_by_email(db, user.email)
         if user_exists:
             raise HTTPException(
@@ -95,6 +98,33 @@ async def admin_create(
             )
         user_db = create_user(user.dict(exclude_unset=True), db)
         return user_db
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
+
+
+@router.delete("/{user_id}/admin", status_code=response_status.HTTP_200_OK)
+async def admin_delete(
+    request: Request,
+    user_id: str,
+    db: Session = Depends(get_db),
+    data_token=Depends(get_data_authorizer),
+    auth=Depends(allow_only_admins),
+):
+    """
+    Create a new admin user
+    """
+    try:
+        if user_id == str(data_token["user_id"]):
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "You can't delete yourself"}
+            )
+        user = user_repository.get_user_by_id(user_id, db)
+        if not user:
+            raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User not found"})
+        user_repository.delete_user(user, db)
+        return {"message": "User deleted successfully"}
     except HTTPException as e:
         raise e
     except Exception as e:

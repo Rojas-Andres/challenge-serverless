@@ -1,3 +1,10 @@
+## Anotaciones
+1. Roles
+    - Super admin (encargado de crear, eliminar , actualizar usuarios admin)
+    - Admin (encargado de crear o actualizar productos)
+    - Usuario (Usuario de la plataforma)
+    - Usuario anonimo ( usuario que no esta registrado en la plataforma)
+
 ## Run project local without Docker
 virtualenv venv
 pip install -r local.txt

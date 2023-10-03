@@ -13,8 +13,7 @@ class Credentials(BaseModel):
 class AuthReturn(BaseModel):
     access_token: str
     full_name: str
-    is_super_admin: bool
-    is_admin: bool
     expires_at: str
+    rol_type: str
     uuid: str
     id: int

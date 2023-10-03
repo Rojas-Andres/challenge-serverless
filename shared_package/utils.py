@@ -37,8 +37,7 @@ def get_data_authorizer(request: Request):
                 "requestContext": {
                     "authorizer": {
                         "user_id": token_decode.get("user_id"),
-                        "is_admin": token_decode.get("is_admin"),
-                        "is_super_admin": token_decode.get("is_super_admin"),
+                        "rol_type": token_decode.get("rol_type"),
                     }
                 }
             }
