@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Environment:
+    Description: Environment in which the resources will be deploy
+    Type: String
+    Default: development
+  SQSBatchSize:
+    Description: sqs batch size
+    Type: String
+    Default: 5
+  AuthorizerTimeout:
+    Description: authorizer timeout
+    Type: String
+    Default: 60
+  DBSuffix:
+    Description: dynamodb table suffix
+    Type: String
+    Default: subfix_db
+  TokenExpiration:
+    Description: token expiration
+    Type: String
+    Default: 120
+  GlobalTimeout:
+    Description: global timeout
+    Type: String
+    Default: 60
+  DyanmoDBReadCapacityUnits:
+    Description: dynamodb read capacity units
+    Type: String
+    Default: 5
+  DyanmoDBWriteCapacityUnits:
+    Description: dynamodb write capacity units
+    Type: String
+    Default: 5
+  SecretKey:
+    Description: Secret Key
+    Type: String
+    Default: secret_key
+  EnvAwsAccessKey:
+    Description: Env aws access key
+    Type: String
+    Default: access key
+  EnvAwsSecretAccessKey:
+    Description: Env Aws Secret access key
+    Type: String
+    Default: secret_access_key
+  EnvAwsRegion:
+    Description: Secret Key
+    Type: String
+    Default: env_aws_region
+  DBUser:
+    Description: database user
+    Type: String
+    Default: challenge-database-user
+  DBPassword:
+    Description: database password
+    Type: String
+    Default: challenge-database-password
+  DBHostWriter:
+    Description: database host writer
+    Type: String
+    Default: challenge-database-host-writer
+  DBHostRead:
+    Description: database host read
+    Type: String
+    Default: challenge-database-host-read
+  DBPort:
+    Description: database port
+    Type: String
+    Default: challenge-database-port
+  DBName:
+    Description: database name
+    Type: String
+    Default: challenge-database-name
+  StackNameChallenge:
+    Description: Stack Name challenge
+    Type: String
+    Default: challenge-stack-name-challenge
+  FromEmail:
+    Description: From Email
+    Type: String
+    Default: test@email.com
+  SendgriApiKey:
+    Description: Sendgrid Api Key
+    Type: String
+    Default: "123"
+Resources:
+
+  # Layer stack
+  LayerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: template_layers.yaml
+      Parameters:
+        StackNameChallenge: !Ref StackNameChallenge
+        Environment: !Ref Environment
+      TimeoutInMinutes: 10
+
+  # Dynamo Stack
+  DynamoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: template_dynamo.yaml
+      Parameters:
+        StackNameChallenge: !Ref StackNameChallenge
+        Environment: !Ref Environment
+        DyanmoDBReadCapacityUnits: !Ref DyanmoDBReadCapacityUnits
+        DyanmoDBWriteCapacityUnits: !Ref DyanmoDBWriteCapacityUnits
+      TimeoutInMinutes: 10
+
+  # Authorizer Stack
+  AuthorizerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: template_authorizer.yaml
+      Parameters:
+        GlobalTimeout: !Ref GlobalTimeout
+        Environment: !Ref Environment
+        SecretKey: !Ref SecretKey
+        StackNameChallenge: !Ref StackNameChallenge
+        # Layer
+        LayerDependencies: !GetAtt LayerStack.Outputs.LayerDependencies
+        # Dynamo
+        DynamoTableName: !GetAtt DynamoStack.Outputs.DynamoTableName
+        # Lambda Security Group
+        LambdasSecurityGroup: !GetAtt SecurityGroupStack.Outputs.LambdasSecurityGroup
+      TimeoutInMinutes: 10
+
+  ApiGatewayStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: template.yaml
+      Parameters:
+        Environment: !Ref Environment
+        SecretKey: !Ref SecretKey
+        DBName: !Ref DBName
+        DBUser: !Ref DBUser
+        DBPassword: !Ref DBPassword
+        DBPort: !Ref DBPort
+        DBHostRead: !Ref DBHostRead
+        DBHostWriter: !Ref DBHostWriter
+        Environment: !Ref Environment
+        EnvAwsSecretAccessKey: !Ref EnvAwsSecretAccessKey
+        EnvAwsRegion: !Ref EnvAwsRegion
+        EnvAwsAccessKey: !Ref EnvAwsAccessKey
+        GlobalTimeout: !Ref GlobalTimeout
+        TokenExpiration: !Ref TokenExpiration
+        AuthorizerTimeout: !Ref AuthorizerTimeout
+        SQSBatchSize: !Ref SQSBatchSize
+        StackNameChallenge: !Ref StackNameChallenge
+        FromEmail: !Ref FromEmail
+        SendgriApiKey: !Ref SendgriApiKey
+        # Layer
+        LayerDependencies: !GetAtt LayerStack.Outputs.LayerDependencies
+        # Dynamo
+        DynamoTableName: !GetAtt DynamoStack.Outputs.DynamoTableName
+        # Security group
+        LambdasSecurityGroup: !GetAtt SecurityGroupStack.Outputs.LambdasSecurityGroup
+        AuthorizerArn: !GetAtt AuthorizerStack.Outputs.AuthorizerArn
+      TimeoutInMinutes: 10

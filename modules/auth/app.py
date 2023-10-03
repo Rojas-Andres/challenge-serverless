@@ -18,6 +18,8 @@ from starlette.requests import Request
 from shared_package.db import models
 from shared_package.db.session import get_db
 from shared_package.repository import user as user_repository
+from shared_package.repository.user import create_user
+from shared_package.schemas.user import UserBase, UserBaseAdmin, UserReturn, UserUpdate
 from shared_package.utils import get_data_authorizer, get_user_data
 
 app = FastAPI(
@@ -54,7 +56,27 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@router.post("/", status_code=response_status.HTTP_200_OK, response_model=AuthReturn)
+@router.post("/singup", status_code=response_status.HTTP_201_CREATED, response_model=UserReturn)
+async def user_generic_create(request: Request, user: UserBase, db: Session = Depends(get_db)):
+    """
+    Create a new user in app
+    """
+    try:
+        user_exists = user_repository.get_user_by_email(db, user.email)
+        if user_exists:
+            raise HTTPException(
+                status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": "User already exists"}
+            )
+        user.password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        user_db = create_user(user.dict(exclude_unset=True), db)
+        return user_db
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=response_status.HTTP_400_BAD_REQUEST, detail={"error": str(e)})
+
+
+@router.post("/singin", status_code=response_status.HTTP_200_OK, response_model=AuthReturn)
 async def singin(request: Request, credentials: Credentials, db: Session = Depends(get_db)):
     try:
         user = user_repository.get_user_by_email(db, credentials.email)

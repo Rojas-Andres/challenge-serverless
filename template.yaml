@@ -1,0 +1,293 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Stack Microservices
+
+Parameters:
+  Environment:
+    Description: Environment in which the resources will be deploy
+    Type: String
+    Default: development
+  EnvironmentNewVersion:
+    Description: Environment New version
+    Type: String
+    Default: backend
+  SQSBatchSize:
+    Description: sqs batch size
+    Type: String
+    Default: 5
+  AuthorizerTimeout:
+    Description: authorizer timeout
+    Type: String
+    Default: 60
+  DBSuffix:
+    Description: dynamodb table suffix
+    Type: String
+    Default: subfix_db
+  TokenExpiration:
+    Description: token expiration
+    Type: String
+    Default: 120
+  GlobalTimeout:
+    Description: global timeout
+    Type: String
+    Default: 60
+  DyanmoDBReadCapacityUnits:
+    Description: dynamodb read capacity units
+    Type: String
+    Default: 5
+  DyanmoDBWriteCapacityUnits:
+    Description: dynamodb write capacity units
+    Type: String
+    Default: 5
+  UrlElasticBeanstalk:
+    Description: Url Elastic Beanstalk
+    Type: String
+    Default: test.com
+  SecretKey:
+    Description: Secret Key
+    Type: String
+    Default: secret_key
+  EnvAwsAccessKey:
+    Description: Env aws access key
+    Type: String
+    Default: access key
+  EnvAwsSecretAccessKey:
+    Description: Env Aws Secret access key
+    Type: String
+    Default: secret_access_key
+  EnvAwsRegion:
+    Description: Secret Key
+    Type: String
+    Default: env_aws_region
+  DBUser:
+    Description: database user
+    Type: String
+    Default: challenge-database-user
+  DBPassword:
+    Description: database password
+    Type: String
+    Default: challenge-database-password
+  DBHostWriter:
+    Description: database host writer
+    Type: String
+    Default: challenge-database-host-writer
+  DBHostRead:
+    Description: database host read
+    Type: String
+    Default: challenge-database-host-read
+  DBPort:
+    Description: database port
+    Type: String
+    Default: challenge-database-port
+  DBName:
+    Description: database name
+    Type: String
+    Default: challenge-database-name
+  StackNameChallenge:
+    Description: stack Name
+    Type: String
+    Default: challenge-stack-name
+  LayerDependencies:
+    Description: Layer Dependencies
+    Type: String
+  DynamoTableName:
+    Description: Dynamo Table name
+    Type: String
+  LambdasSecurityGroup:
+    Description: Security Group
+    Type: String
+  AuthorizerArn:
+    Description: Authorizer Arn
+    Type: String
+  FromEmail:
+    Description: From Email
+    Type: String
+    Default: test@email.com
+  SendgriApiKey:
+    Description: Sendgrid Api Key
+    Type: String
+    Default: "123"
+  UrlTemplateForgotPassword:
+    Description: Url template forgot password
+    Type: String
+    Default: url_template_forgot_password
+
+Globals:
+  Function:
+    Timeout: !Ref GlobalTimeout
+    Tracing: Active
+    MemorySize: 256
+    Handler: app.handler
+    Runtime: python3.9
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        SECRET_KEY: !Ref SecretKey
+        ENV_AWS_ACCESS_KEY_ID: !Ref EnvAwsAccessKey
+        ENV_AWS_SECRET_ACCESS_KEY: !Ref EnvAwsSecretAccessKey
+        ENV_AWS_REGION: !Ref EnvAwsRegion
+        DB_USER: !Ref DBUser
+        DB_PASSWORD: !Ref DBPassword
+        DB_HOST_WRITER: !Ref DBHostWriter
+        DB_HOST_READ: !Ref DBHostRead
+        DB_PORT: !Ref DBPort
+        DB_NAME: !Ref DBName
+        FROM_EMAIL: !Ref FromEmail
+        SENDGRID_API_KEY: !Ref SendgriApiKey
+        SQS_NOTIFICATION_EMAIL: !Ref SqsQueue
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Name: !Sub api-${StackNameChallenge}-${Environment}
+    Properties:
+      TracingEnabled: true
+      StageName: !Ref Environment
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+      Auth:
+        DefaultAuthorizer: LambdaAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          LambdaAuthorizer:
+            FunctionArn: !Ref AuthorizerArn
+      CacheClusterEnabled: true
+      CacheClusterSize: !Ref GbCacheApiGateway
+      MethodSettings:
+        - ResourcePath: /
+          HttpMethod: GET
+          CachingEnabled: true
+          CacheTtlInSeconds: 30
+
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: modules/auth
+      FunctionName: !Sub auth-fun-${StackNameChallenge}-${Environment}
+      Description: !Sub Auth microservice «${Environment}»
+      Layers:
+        - !Ref LayerDependencies
+      Environment:
+        Variables:
+          FUNCTION_NAME: !Sub token-${StackNameChallenge}-${Environment}
+          TOKEN_EXPIRATION: !Ref TokenExpiration
+          AUTHORIZER_TABLE: !Ref DynamoTableName
+      Policies:
+        - AmazonDynamoDBFullAccess
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /auth/singin
+            Method: POST
+            Auth:
+              Authorizer: NONE
+        singup:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /auth/singup
+            Method: POST
+            Auth:
+              Authorizer: NONE
+  UserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: modules/user
+      FunctionName: !Sub user-${StackNameChallenge}-${Environment}
+      Description: !Sub User microservice «${Environment}»
+      Layers:
+        - !Ref LayerDependencies
+      Environment:
+        Variables:
+          FUNCTION_NAME: !Sub token-${StackNameChallenge}-${Environment}
+          TOKEN_EXPIRATION: !Ref TokenExpiration
+          AUTHORIZER_TABLE: !Ref DynamoTableName
+      Policies:
+        - AmazonDynamoDBFullAccess
+      Events:
+        createUserAdmin:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/{id}/admin
+            Method: POST
+        deleteUserAdmin:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/{id}/admin
+            Method: DELETE
+        updateUserAdmin:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/{id}/admin
+            Method: PATCH
+  ProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: modules/product
+      FunctionName: !Sub product-${StackNameChallenge}-${Environment}
+      Description: !Sub Product microservice «${Environment}»
+      Layers:
+        - !Ref LayerDependencies
+      Environment:
+        Variables:
+          FUNCTION_NAME: !Sub token-${StackNameChallenge}-${Environment}
+          TOKEN_EXPIRATION: !Ref TokenExpiration
+          AUTHORIZER_TABLE: !Ref DynamoTableName
+      Events:
+        createProduct:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/
+            Method: POST
+        createBrand:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/brend
+            Method: POST
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: modules/notifications
+      FunctionName: !Sub notifications-${StackNameChallenge}-${Environment}
+      Description: !Sub notifications «${Environment}»
+      Timeout: !Ref AuthorizerTimeout
+      Layers:
+        - !Ref LayerDependencies
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt SqsQueue.QueueName
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SqsQueue.Arn
+            BatchSize: !Ref SQSBatchSize
+
+  SqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub sqs-queue-${StackNameChallenge}-${Environment}
+      VisibilityTimeout: !Ref AuthorizerTimeout
+
+Outputs:
+  ApiGatewayResource:
+    Value: !Ref Api
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiGatewayResource"
+  RootResourceIdApiGateway:
+    Value: !GetAtt Api.RootResourceId
+    Export:
+      Name: !Sub "${AWS::StackName}-RootApiGa"
+  ApiUrl:
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    Description: URL de la API

@@ -1,0 +1,100 @@
+name: Pipeline
+
+on:
+  push:
+    branches:
+      - "main"
+      - "develop"
+      - "develop_auth"
+      - "release/*"
+      - "feature/*"
+env:
+  SAM_TEMPLATE: template_master.yaml
+  #DEVELOP
+  PIPELINE_USER_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  PIPELINE_USER_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #DEVELOP AND PROD
+
+  DEVELOP_PIPELINE_EXECUTION_ROLE: arn:aws:iam::926297945794:role/aws-sam-cli-managed-challeng-PipelineExecutionRole-691PRQ7GT4LF
+  DEVELOP_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::926297945794:role/aws-sam-cli-managed-chall-CloudFormationExecutionR-18EJ95EIUGRYA
+  DEVELOP_ARTIFACTS_BUCKET: aws-sam-cli-managed-challenge-ser-artifactsbucket-1m6eups628kms
+  DEVELOP_STACK_NAME: challenge-serverless-dev
+  DEVELOP_REGION: us-east-2
+
+  # DEVELOP
+  ENV_AWS_ACCESS_KEY: ${{ secrets.ENV_AWS_ACCESS_KEY }}
+  ENV_AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV_AWS_SECRET_ACCESS_KEY }}
+  ENV_AWS_REGION: ${{ secrets.ENV_AWS_REGION }}
+  DB_USER_DEVELOP: ${{ secrets.DB_USER_DEVELOP }}
+  DB_PASSWORD_DEVELOP: ${{ secrets.DB_PASSWORD_DEVELOP }}
+  DB_HOST_WRITER_DEVELOP: ${{ secrets.DB_HOST_WRITER_DEVELOP }}
+  DB_HOST_READER_DEVELOP: ${{ secrets.DB_HOST_READER_DEVELOP }}
+  DB_PORT_DEVELOP: ${{ secrets.DB_PORT_DEVELOP }}
+  DB_NAME_DEVELOP: ${{ secrets.DB_NAME_DEVELOP }}
+  TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+  SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+  FROM_EMAIL: afrojaslondono@gmail.com
+  SECRET_KEY_DEVELOP: secret_key
+
+
+jobs:
+  build-and-deploy-develop:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+      - name: Install dependencies layer basic
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r layer_dependencies_basic/requirements.txt -t layer_dependencies_basic/python
+      - name: Package layer basic
+        run: |
+          cd layer_dependencies_basic
+          zip -r layer_dependencies_basic.zip python
+          cd ..
+      - name: Add requirements in modules by branch
+        run: |
+          python generate_requirements.py ${{ env.TOKEN_GITHUB }} ${GITHUB_REF#refs/heads/}
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Assume the testing pipeline user role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.DEVELOP_REGION }}
+          role-to-assume: ${{ env.DEVELOP_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: develop-deployment
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      - run: sam build --template ${SAM_TEMPLATE} --use-container
+      - name: Deploy to develop stack in the account
+        shell: bash
+        run: |
+          sam deploy --stack-name ${DEVELOP_STACK_NAME} \
+            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --region ${DEVELOP_REGION} \
+            --s3-bucket ${DEVELOP_ARTIFACTS_BUCKET} \
+            --no-fail-on-empty-changeset \
+            --role-arn ${DEVELOP_CLOUDFORMATION_EXECUTION_ROLE} \
+            --parameter-overrides \
+              "EnvAwsAccessKey=${ENV_AWS_ACCESS_KEY}" \
+              "EnvAwsSecretAccessKey=${ENV_AWS_SECRET_ACCESS_KEY}" \
+              "DBUser=${DB_USER_DEVELOP}" \
+              "DBPassword=${DB_PASSWORD_DEVELOP}" \
+              "DBHostWriter=${DB_HOST_WRITER_DEVELOP}" \
+              "DBHostRead=${DB_HOST_READER_DEVELOP}" \
+              "DBPort=${DB_PORT_DEVELOP}" \
+              "DBName=${DB_NAME_DEVELOP}" \
+              "Environment=dev" \
+              "StackNameChallenge=${DEVELOP_STACK_NAME}" \
+              "SecretKey=${SECRET_KEY_DEVELOP}" \
+              "FromEmail=${FROM_EMAIL}" \
+              "SendgriApiKey=${SENDGRID_API_KEY}" \
+              "EnvAwsRegion=${DEVELOP_REGION}"

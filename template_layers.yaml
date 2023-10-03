@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Stack Microservices
+
+Parameters:
+  Environment:
+    Description: Environment in which the resources will be deploy
+    Type: String
+    Default: development
+  StackNameChallenge:
+    Description: stack Name
+    Type: String
+    Default: challenge-stack-name
+
+Resources:
+  LayerDependencies:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub layer-dependencies-${StackNameChallenge}-${Environment}
+      Description: Libraries python dependencies basic
+      ContentUri: ./layer_dependencies_basic/layer_dependencies_basic.zip
+      CompatibleRuntimes:
+        - python3.9
+
+
+Outputs:
+  LayerDependencies:
+    Value: !Ref LayerDependencies
+    Export:
+      Name: !Sub layer-dependencies-${StackNameChallenge}-${Environment}
+  LayerCron:
+    Value: !Ref LayerCron
+    Export:
+      Name: !Sub layer-cron-${StackNameChallenge}-${Environment}
