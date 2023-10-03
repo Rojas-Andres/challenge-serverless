@@ -19,7 +19,9 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
 from fastapi.middleware.cors import CORSMiddleware
+
 from modules.auth.app import router as auth_router
+from modules.product.app import router as product_router
 from modules.user.app import router as user_router
 
 app = FastAPI()
@@ -47,6 +49,7 @@ async def options_handler(request, response, path):
 
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(product_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8001, reload=True)
