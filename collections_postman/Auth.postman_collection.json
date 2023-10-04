@@ -1,0 +1,37 @@
+{
+	"info": {
+		"_postman_id": "239fc490-cf96-4d38-a8b0-3acfb890cf86",
+		"name": "Auth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25293718"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"user@example.com\",\r\n  \"password\": \"stringst\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth/singin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth",
+						"singin"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

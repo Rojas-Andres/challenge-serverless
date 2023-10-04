@@ -1,0 +1,116 @@
+{
+	"info": {
+		"_postman_id": "c22399c9-562d-4b8d-bfd6-2e833f9a4b14",
+		"name": "Product",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25293718"
+	},
+	"item": [
+		{
+			"name": "Create Brand",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create product",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sku\":\"adasdda1sdsa\",\r\n    \"price\":12123,\r\n    \"name\":\"adsasd\",\r\n    \"brand_id\":1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/product",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update product",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sku\":\"adasdda1sdsa\",\r\n    \"price\":1111111111,\r\n    \"name\":\"aaa\",\r\n    \"brand_id\":1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/product/9",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"product",
+						"9"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete product Copy",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/product/8",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"product",
+						"8"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

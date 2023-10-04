@@ -1,0 +1,87 @@
+{
+	"info": {
+		"_postman_id": "ef7e306e-d7d5-4e42-9c14-8c96b1e36a6d",
+		"name": "Users",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25293718"
+	},
+	"item": [
+		{
+			"name": "Create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"full_name\": \"string\",\r\n  \"email\": \"user@example.com\",\r\n  \"is_active\": true,\r\n  \"is_admin\": false,\r\n  \"password\": \"stringst\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/user/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"full_name\": \"string\",\r\n  \"email\": \"user@example.com\",\r\n  \"is_active\": true,\r\n  \"is_admin\": false,\r\n  \"password\": \"stringst\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/user/",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								""
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Oct 2023 23:54:35 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "42"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"detail\": {\n        \"error\": \"User already exists\"\n    }\n}"
+				}
+			]
+		}
+	]
+}

@@ -12,6 +12,35 @@
 4. El sku es unico para cada producto.
 5. Cuando se actualiza un precio al producto, se obtienen los usuarios admin de la aplicacion y se llama al sqs que se encargara de enviar la notificacion de que el producto fue editado.
 
+# Cosas por implementar
+1. Implementacion de un proxy de lectura y escritura de la base de datos
+2. Implementacion de la tabla product_view_user
+3. Implementacion pre-commit y linters
+4. Implementacion de coverge.
+5. Validaciones de TTL para los tokens generados en dynamo
+6. Terminacion de test para todas las apis.
+
+
+URL: Api gateway https://nafhyw15ak.execute-api.us-west-2.amazonaws.com/dev
+
+# Diagrama Infra
+![](images/diagrama_infra.png)
+
+# Api gateway deploy
+![](images/api_gateway_1.png)
+# Lambdas deploy
+![](images/lambdas.png)
+# Test
+![](images/test.png)
+
+# Cloudformation deploy success
+![](images/cloudformation_deploy_success.png)
+# CICD deploy success
+![](images/cicd_deploy.png)
+# Capa Lambda deploy success
+![](images/capa_lambda.png)
+
+
 ## Run project local without Docker
 virtualenv venv
 pip install -r local.txt

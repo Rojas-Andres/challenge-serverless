@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "e2c7f651-9a33-49b7-a0be-cff0bb8efbf0",
+		"name": "Admin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25293718"
+	},
+	"item": [
+		{
+			"name": "Create a new admin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"full_name\":\"\",\r\n    \"password\":\"asddsadsadsadsasda\",\r\n    \"email\":\"useraa1@example.com\",\r\n    \"is_admin\":true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/user/6/admin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"6",
+						"admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"full_name\":\"\",\r\n    \"password\":\"asddsadsadsadsasda\",\r\n    \"email\":\"useraa1@example.com\",\r\n    \"is_admin\":true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/user/12/admin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"12",
+						"admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update user",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"full_name\":\"aaaaaaaaa\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/user/6/admin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"6",
+						"admin"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
