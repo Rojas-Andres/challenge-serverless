@@ -45,10 +45,26 @@ URL: Api gateway https://nafhyw15ak.execute-api.us-west-2.amazonaws.com/dev
 virtualenv venv
 pip install -r local.txt
 python main.py
+** Solo levantar la base de datos del docker-compose y apagar el servicio de fastapi
+.env
+
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST_WRITER=localhost
+DB_HOST_READ=localhost
+DB_PORT=5433
+DB_NAME=postgres
+ENVIRONMENT=local
+TOKEN_EXPIRATION=3600
+SECRET_KEY=secret_key
+
+
 # RUN migrations alembic
 
 alembic revision --autogenerate -m "generate new models"
 alembic upgrade heads
+
+
 # RUN Docker-compose local
 
 docker-compose -f docker-compose.testing.yml build
