@@ -11,6 +11,12 @@
 3. Por defecto no se eliminara el producto porque si un producto es eliminado tambien se elimina el historial de las visitas de los usuarios anonimos y por lo tanto no se tendria una verdadera traza. Lo que hice fue añadir una columna llamada delete_at y actualizar el sku a sku_delete_hora.
 4. El sku es unico para cada producto.
 5. Cuando se actualiza un precio al producto, se obtienen los usuarios admin de la aplicacion y se llama al sqs que se encargara de enviar la notificacion de que el producto fue editado.
+6. La carpeta shared_package se encuentran todos los archivos que se podrian reutilizar en las otras funciones lambda.
+7. En la carpeta layer_dependencies_basic se encuentra las librerias que normalmente uso en las funciones lambda y aca es donde mediante el job de github creo el layer para usar en las respectivas funciones.
+8. Las migraciones a la base de datos la estoy usando mediante alembic.
+9. En la carpeta collections_postman se encuentran todas las collecioens de postman que tengo hasta el momento.
+10. En la carpeta .github/workflows esta el archivo que uso para automatizar el despliegue
+11. El docker-compose lo iba a usar para generar las migraciones localmente y configurar un cicd para validar el coverage con github actions
 
 # Cosas por implementar
 1. Implementacion de un proxy de lectura y escritura de la base de datos
